@@ -10,7 +10,7 @@
 # Licencja: Creative Commons Uznanie autorstwa 3.0 Polska 
 #
 
-echo "Wrzuta downloader v0.4 by samu"
+echo "Wrzuta downloader v0.41 by samu"
 if [ "$1" == "" ]; then
    echo "Podaj nazwe piosenki jako pierwszy argument!";
    exit;
