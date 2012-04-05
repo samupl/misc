@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) 2011 Jakub Szafrański <samu@pirc.pl>
+# Copyright (c) 2011 Jakub 'samu' Szafrański <s@samu.pl>
 #
 # All rights reserved.
 #
