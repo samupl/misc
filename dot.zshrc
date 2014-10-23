@@ -80,9 +80,12 @@ bindkey "^[[3~" delete-char
 bindkey "^[[1;5D" backward-word
 bindkey "^[[1;5C" forward-word
 
+bindkey -M viins '^r' history-incremental-search-backward
+bindkey -M vicmd '^r' history-incremental-search-backward
+
 termtitle() {
         case "$TERM" in
-                rxvt*|xterm|nxterm|gnome|screen|screen-*)
+                rxvt*|xterm-256color|xterm|nxterm|gnome|screen|screen-*)
                         case "$1" in
                                 precmd)
                                         print -Pn "\e]0;%n@%m: %~\a"
@@ -107,6 +110,14 @@ termtitle() {
 
 # Keys.
 case $TERM in
+    xterm-256color)
+        bindkey "^[OH" beginning-of-line
+        bindkey "^[OF" end-of-line
+        bindkey "^[[3~" delete-char
+        bindkey "^[[1;5D" backward-word
+        bindkey "^[[1;5C" forward-word
+    ;;
+    
     xterm)
         bindkey "^[OH" beginning-of-line
         bindkey "^[OF" end-of-line
@@ -276,7 +287,7 @@ function port_isinstalled() {
 #
 function precmd() {
     case $TERM in
-        rxvt*|xterm|nxterm|gnome|screen)
+        rxvt*|xterm-256color|xterm|nxterm|gnome|screen)
                         termtitle precmd
                         ;;
     esac
@@ -346,8 +357,94 @@ function precmd() {
 
 preexec () {
     case $TERM in
-        rxvt*|xterm|nxterm|gnome|screen)
+        rxvt*|xterm-256color|xterm|nxterm|gnome|screen)
             termtitle preexec
             ;;
     esac
 }
+
+#. ~/.aliases
+
+autoload -U edit-command-line
+zle -N edit-command-line
+bindkey '^x^e' edit-command-line
+
+export HISTSIZE=1000000000
+alias nano='nano -w -E -T4 -i'
+export EDITOR='nano -w'
+export PATH="/home/js/.bin:/home/js/.gem/ruby/2.0.0/bin:/home/js/.gem/ruby/1.9.1:$PATH:/opt/java/jre/bin"
+zstyle -e ':completion::*:*:*:hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
+
+#hosts=$(<~/.ssh_hosts)
+#zstyle -e ':completion:*' hosts 'reply=($hosts)'
+
+man() {
+    env LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+	LESS_TERMCAP_md=$(printf "\e[1;31m") \
+	LESS_TERMCAP_me=$(printf "\e[0m") \
+	LESS_TERMCAP_se=$(printf "\e[0m") \
+	LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+	LESS_TERMCAP_ue=$(printf "\e[0m") \
+	LESS_TERMCAP_us=$(printf "\e[1;32m") \
+	man "$@"
+}
+
+
+# create a zkbd compatible hash;
+# to add other keys to this hash, see: man 5 terminfo
+typeset -A key
+
+key[Home]=${terminfo[khome]}
+
+key[End]=${terminfo[kend]}
+key[Insert]=${terminfo[kich1]}
+key[Delete]=${terminfo[kdch1]}
+key[Up]=${terminfo[kcuu1]}
+key[Down]=${terminfo[kcud1]}
+key[Left]=${terminfo[kcub1]}
+key[Right]=${terminfo[kcuf1]}
+key[PageUp]=${terminfo[kpp]}
+key[PageDown]=${terminfo[knp]}
+
+# setup key accordingly
+[[ -n "${key[Home]}"     ]]  && bindkey  "${key[Home]}"     beginning-of-line
+[[ -n "${key[End]}"      ]]  && bindkey  "${key[End]}"      end-of-line
+[[ -n "${key[Insert]}"   ]]  && bindkey  "${key[Insert]}"   overwrite-mode
+[[ -n "${key[Delete]}"   ]]  && bindkey  "${key[Delete]}"   delete-char
+[[ -n "${key[Up]}"       ]]  && bindkey  "${key[Up]}"       up-line-or-history
+[[ -n "${key[Down]}"     ]]  && bindkey  "${key[Down]}"     down-line-or-history
+[[ -n "${key[Left]}"     ]]  && bindkey  "${key[Left]}"     backward-char
+[[ -n "${key[Right]}"    ]]  && bindkey  "${key[Right]}"    forward-char
+[[ -n "${key[PageUp]}"   ]]  && bindkey  "${key[PageUp]}"   beginning-of-buffer-or-history
+[[ -n "${key[PageDown]}" ]]  && bindkey  "${key[PageDown]}" end-of-buffer-or-history
+
+# Finally, make sure the terminal is in application mode, when zle is
+# active. Only then are the values from $terminfo valid.
+if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
+    function zle-line-init () {
+        printf '%s' "${terminfo[smkx]}"
+    }
+    function zle-line-finish () {
+        printf '%s' "${terminfo[rmkx]}"
+    }
+    zle -N zle-line-init
+    zle -N zle-line-finish
+fi
+
+
+#PATH=$(cope_path):$PATH
+#source /etc/java_flags
+alias ssh-ameryk='ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no 259064@ameryk.fizyka.umk.pl'
+
+# Setup zsh-autosuggestions
+source ~/.zsh-autosuggestions/autosuggestions.zsh
+
+# Enable autosuggestions automatically
+zle-line-init() {
+    zle autosuggest-start
+}
+zle -N zle-line-init
+
+# use ctrl+t to toggle autosuggestions(hopefully this wont be needed as
+# zsh-autosuggestions is designed to be unobtrusive)
+bindkey '^T' autosuggest-toggle
