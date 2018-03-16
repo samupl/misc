@@ -3,6 +3,8 @@
 # A 'simple' script which should write numbers from 1 to 20.
 # On IRC 'diamondcat' asked for such a simple code, so here it is.
 #
+# This script, for some reason, works only on the following perl version
+# 
 # $ perl -v
 #
 # This is perl 5, version 12, subversion 3 (v5.12.3) built for i686-linux-thread-multi
